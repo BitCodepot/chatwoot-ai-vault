@@ -77,3 +77,17 @@ notify.env|notify/.env
 infra.env|infra/.env
 EOF
 }
+
+# 找一个含 tar+sh 的辅助镜像，用于导出/灌入 docker 命名卷。
+# 优先用「本机已存在」的镜像——避开 macOS 代理(Surge/Clash)拉不动 Docker Hub 的坑。
+# 可用 HELPER_IMAGE 环境变量强制指定。结果打到 stdout；找不到则返回非 0。
+resolve_helper_image() {
+  if [[ -n "${HELPER_IMAGE:-}" ]]; then printf '%s' "$HELPER_IMAGE"; return 0; fi
+  local img
+  for img in alpine:latest alpine redis:7-alpine busybox:latest busybox pgvector/pgvector:pg16 postgres:16-alpine; do
+    if docker image inspect "$img" >/dev/null 2>&1; then printf '%s' "$img"; return 0; fi
+  done
+  # 本机没有现成的——最后试拉一次 alpine（联网正常时）
+  if docker pull -q alpine >/dev/null 2>&1; then printf '%s' alpine; return 0; fi
+  return 1
+}

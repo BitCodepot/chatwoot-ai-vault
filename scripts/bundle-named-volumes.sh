@@ -56,25 +56,42 @@ done < <(docker volume ls --format '{{.Name}}')
 [[ ${#FOUND[@]} -gt 0 ]] || die "没找到任何项目命名卷（栈没建过？或在别的 docker context？先 docker volume ls 看看）"
 warn "共匹配 ${#FOUND[@]} 个卷，开始备份"
 
+HELPER="$(resolve_helper_image)" || die "找不到含 tar 的辅助镜像，且拉不动 alpine（代理/网络挡了 Docker Hub？）。请 docker pull alpine，或设 HELPER_IMAGE=<本机已有镜像>（如 redis:7-alpine）"
+log "辅助镜像: $HELPER"
+
 STAMP="$(date +%Y%m%d-%H%M%S)"
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
 STAGE="$WORK/named-volumes"
 mkdir -p "$STAGE"
+
+# 失败也要把栈拉回来——不能停了不恢复
+STOPPED=0
+restart_stacks() {
+  [[ "${STOPPED:-0}" -eq 1 ]] || return 0
+  STOPPED=0
+  log "重新拉起栈..."
+  (cd "$MAIN_REPO/infra" && docker compose up -d) 2>/dev/null || warn "  infra up 跳过"
+  (cd "$MAIN_REPO" && docker compose -f docker-compose.app.yml up -d) 2>/dev/null || warn "  app up 跳过"
+}
+trap 'restart_stacks; rm -rf "$WORK"' EXIT
 
 if [[ "$STOP" -eq 1 ]]; then
   log "停 infra/app 栈以保数据一致..."
   (cd "$MAIN_REPO/infra" && docker compose stop) 2>/dev/null || warn "  infra compose stop 跳过（可能没起）"
   (cd "$MAIN_REPO" && docker compose -f docker-compose.app.yml stop) 2>/dev/null || warn "  app compose stop 跳过"
+  STOPPED=1
 fi
 
 # 逐卷用 alpine 容器导出为 tar（卷名写进文件名，还原时一一对应）
 for v in "${FOUND[@]}"; do
   log "导出卷 $v"
-  docker run --rm -v "$v":/data:ro -v "$STAGE":/out alpine \
-    sh -c "cd /data && tar cf /out/${v}.tar ." || die "导出 $v 失败"
+  docker run --rm --entrypoint sh -v "$v":/data:ro -v "$STAGE":/out "$HELPER" \
+    -c "cd /data && tar cf /out/${v}.tar ." || die "导出 $v 失败"
 done
 printf '%s\n' "${FOUND[@]}" > "$STAGE/_VOLUMES.txt"
+
+# 数据已导出到 $STAGE，尽早把栈拉回来缩短停机（后面压缩/加密/上传不再需要栈停着）
+restart_stacks
 
 TARBALL="$WORK/named-volumes-$STAMP.tar.zst"
 ENC="$TARBALL.enc"
@@ -97,12 +114,6 @@ unset PASSPHRASE
 SHA="$(shasum -a 256 "$ENC" | awk '{print $1}')"
 ASSET_NAME="$(basename "$ENC")"
 ok "加密完成: $ASSET_NAME  sha256=${SHA:0:16}…"
-
-if [[ "$STOP" -eq 1 ]]; then
-  log "重新拉起栈..."
-  (cd "$MAIN_REPO/infra" && docker compose up -d) 2>/dev/null || warn "  infra up 跳过"
-  (cd "$MAIN_REPO" && docker compose -f docker-compose.app.yml up -d) 2>/dev/null || warn "  app up 跳过"
-fi
 
 if [[ "$UPLOAD" -eq 0 ]]; then
   ok "本地包: $ENC"

@@ -61,6 +61,9 @@ fi
 SRC="$EXDIR/named-volumes"
 [[ -f "$SRC/_VOLUMES.txt" ]] || die "包结构异常：缺 _VOLUMES.txt"
 
+HELPER="$(resolve_helper_image)" || die "找不到含 tar 的辅助镜像，且拉不动 alpine。请 docker pull alpine，或设 HELPER_IMAGE=<本机已有镜像>"
+log "辅助镜像: $HELPER"
+
 while IFS= read -r v; do
   [[ -z "$v" ]] && continue
   tarf="$SRC/${v}.tar"
@@ -76,8 +79,8 @@ while IFS= read -r v; do
   fi
   log "还原卷 $v"
   docker volume create "$v" >/dev/null
-  docker run --rm -v "$v":/data -v "$SRC":/in:ro alpine \
-    sh -c "cd /data && tar xf /in/${v}.tar" || die "还原 $v 失败"
+  docker run --rm --entrypoint sh -v "$v":/data -v "$SRC":/in:ro "$HELPER" \
+    -c "cd /data && tar xf /in/${v}.tar" || die "还原 $v 失败"
   ok "  $v ✓"
 done < "$SRC/_VOLUMES.txt"
 
