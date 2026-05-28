@@ -50,10 +50,10 @@ require_cmd() {
 
 # 强校验：必须在标准路径下运行，避免 Claude memory hash 错位
 assert_standard_paths() {
-  [[ -d "$MAIN_REPO" ]] || die "主仓不在标准路径 $MAIN_REPO（这条强制约束见 README）"
-  [[ -d "$VAULT_DIR" ]] || die "vault 不在标准路径 $VAULT_DIR"
+  [[ -d "$MAIN_REPO" ]] || die "主仓不在标准路径 ${MAIN_REPO}（这条强制约束见 README）"
+  [[ -d "$VAULT_DIR" ]] || die "vault 不在标准路径 ${VAULT_DIR}"
   if [[ "$PWD" != "$VAULT_DIR" && "$PWD" != "$VAULT_DIR/scripts" ]]; then
-    warn "建议在 $VAULT_DIR 内运行脚本（当前 $PWD）"
+    warn "建议在 ${VAULT_DIR} 内运行脚本（当前 ${PWD}）"
   fi
 }
 

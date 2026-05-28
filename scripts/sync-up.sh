@@ -22,7 +22,7 @@ while IFS='|' read -r vname rel; do
     cp -p "$src" "envs/main/$vname"
     ok "  $rel → envs/main/$vname"
   else
-    warn "  缺: $src（跳过）"
+    warn "  缺: ${src}（跳过）"
   fi
 done < <(env_pairs)
 
@@ -46,7 +46,7 @@ if [[ -d "$mem_dir" ]]; then
   rsync_mirror "$mem_dir" "claude-memory"
   ok "  $mem_dir → claude-memory/"
 else
-  warn "  Claude memory 目录不存在: $mem_dir（首次跑或路径错位？）"
+  warn "  Claude memory 目录不存在: ${mem_dir}（首次跑或路径错位？）"
 fi
 
 log "5/5 快照 .remember/ → remember-snapshot/"

@@ -44,7 +44,7 @@ if git-crypt status 2>&1 | grep -qi 'locked' >/dev/null; then
     log "  vault locked，自动 unlock 中..."
     git-crypt unlock "$KEY_PATH"
   else
-    die "vault locked 且找不到 key（期望 $KEY_PATH）。请先 git-crypt unlock <key 文件路径>"
+    die "vault locked 且找不到 key（期望 ${KEY_PATH}）。请先 git-crypt unlock <key 文件路径>"
   fi
 fi
 ok "  vault unlocked ✓"
@@ -59,7 +59,7 @@ while IFS='|' read -r vname rel; do
     cp -p "$src" "$dst"
     ok "  $vname → $rel"
   else
-    warn "  缺: $src（vault 里没这个 env，跳过）"
+    warn "  缺: ${src}（vault 里没这个 env，跳过）"
   fi
 done < <(env_pairs)
 
