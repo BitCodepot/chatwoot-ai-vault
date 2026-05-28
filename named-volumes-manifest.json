@@ -1,0 +1,10 @@
+{
+  "tag": "named-volumes-20260529-042050",
+  "asset": "named-volumes-20260529-042050.tar.zst.enc",
+  "sha256": "d71f995c73e0e4935256097838908c1cfbc37376ec486b43bf29fd9f8d7a87a6",
+  "size": " 10M",
+  "created_at": "2026-05-28T20:23:11Z",
+  "host": "libaodeMacBook-Pro",
+  "repo": "BitCodepot/chatwoot-ai-vault",
+  "volumes": ["cwai-dev-deps_app_pg_data","cwai-dev-deps_app_redis_data","cwai-infra_cw_next_pg_data","cwai-infra_cw_next_redis_data","cwai-infra_cw_next_storage","cwai-infra_cw_pg_data","cwai-infra_cw_redis_data","cwai-infra_cw_storage","cwai-infra_fastgpt-aiproxy_pg","cwai-infra_fastgpt-minio","cwai-infra_fastgpt-mongo","cwai-infra_fastgpt-pg","cwai-infra_fastgpt-redis"]
+}
