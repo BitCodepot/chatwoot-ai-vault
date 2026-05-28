@@ -87,8 +87,12 @@ ok "  → $mem_dir"
 # === 5. .remember/ 对话历史 ===
 log "5/6 还原 .remember/ 对话 handoff"
 mkdir -p "$MAIN_REPO/.remember"
-rsync -a --human-readable remember-snapshot/ "$MAIN_REPO/.remember/"
-ok "  done"
+if [[ -d remember-snapshot ]]; then
+  rsync -a --human-readable remember-snapshot/ "$MAIN_REPO/.remember/"
+  ok "  done"
+else
+  warn "  vault 无 remember-snapshot/（.remember 本就空），跳过"
+fi
 
 # === 6. Volumes ===
 if [[ "$DO_VOLUMES" -eq 0 ]]; then
