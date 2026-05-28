@@ -57,8 +57,11 @@ SIZE="$(du -h "$TARBALL" | cut -f1)"
 ok "压缩完成: $SIZE"
 
 log "AES-256-CBC + PBKDF2 加密..."
+# 从 key 文件派生 sha256 当 passphrase——绕开 LibreSSL 对二进制 key file 的 NUL 截断
+PASSPHRASE="$(shasum -a 256 "$KEY_PATH" | awk '{print $1}')"
 openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
-  -in "$TARBALL" -out "$ENC" -pass "file:$KEY_PATH"
+  -in "$TARBALL" -out "$ENC" -pass "pass:$PASSPHRASE"
+unset PASSPHRASE
 
 SHA="$(shasum -a 256 "$ENC" | awk '{print $1}')"
 ASSET_NAME="$(basename "$ENC")"

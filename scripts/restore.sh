@@ -114,8 +114,11 @@ else
 
   log "  AES-256-CBC 解密"
   DEC="$WORK/${ASSET%.enc}"
+  # 必须与 bundle-volumes.sh 用同样的派生方式：sha256(key) 当 passphrase
+  PASSPHRASE="$(shasum -a 256 "$KEY_PATH" | awk '{print $1}')"
   openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
-    -in "$WORK/$ASSET" -out "$DEC" -pass "file:$KEY_PATH"
+    -in "$WORK/$ASSET" -out "$DEC" -pass "pass:$PASSPHRASE"
+  unset PASSPHRASE
 
   # 备份现有 volumes（若有）
   if [[ -d "$CWAI_DIFY/volumes" ]]; then
