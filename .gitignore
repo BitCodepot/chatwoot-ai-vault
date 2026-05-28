@@ -1,0 +1,14 @@
+# 解密钥永远不入库（不管你叫它什么名字）
+*.key
+*.gpg-key
+vault.key
+chatwoot-ai-vault.key
+
+# 临时还原下载产物
+.tmp/
+*.tar.gz
+*.tar.gz.enc
+*.sha256
+
+# macOS
+.DS_Store

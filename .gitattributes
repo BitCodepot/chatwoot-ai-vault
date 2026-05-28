@@ -1,0 +1,16 @@
+# git-crypt 加密规则——除明确豁免外，全部内容加密。
+# 解密钥不在仓内，新机器需要单独获取 key 文件（U盘/AirDrop/1Password 等带外通道）。
+
+envs/**                  filter=git-crypt diff=git-crypt
+cwai-patches/**          filter=git-crypt diff=git-crypt
+cwai-dify-config/**      filter=git-crypt diff=git-crypt
+claude-memory/**         filter=git-crypt diff=git-crypt
+remember-snapshot/**     filter=git-crypt diff=git-crypt
+volumes-manifest.json    filter=git-crypt diff=git-crypt
+
+# 以下保留为明文，让没 key 的人也能看到这是个什么仓
+README.md                !filter !diff
+RESTORE.md               !filter !diff
+.gitattributes           !filter !diff
+.gitignore               !filter !diff
+scripts/**               !filter !diff
