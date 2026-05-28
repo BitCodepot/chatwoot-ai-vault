@@ -37,6 +37,8 @@ rsync -a --delete --human-readable \
   --exclude='certbot/conf/archive/' \
   --exclude='*.log' \
   --exclude='.DS_Store' \
+  --exclude='._*' \
+  --exclude='.gitignore' \
   "$CWAI_DIFY/" "cwai-dify-config/"
 ok "  done"
 
